@@ -265,13 +265,26 @@ export const getStyle: PlasmoGetStyle = () => {
       overflow: hidden;
     }
     .rr-an-brief-opts {
-      display: flex; gap: 16px; padding: 0 16px 10px;
+      display: flex; gap: 16px; padding: 0 16px 8px;
       flex-wrap: wrap;
     }
     .rr-an-check {
       display: flex; align-items: center; gap: 5px;
       font-size: 12px; color: #374151; cursor: pointer;
     }
+    .rr-an-brief-workspace {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 16px 10px;
+    }
+    .rr-an-ws-label {
+      flex: none; font-size: 12px; font-weight: 600; color: #6b7280;
+    }
+    .rr-an-ws-input {
+      flex: 1; border: 1px solid #e5e7eb; border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; outline: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .rr-an-ws-input:focus { border-color: #2563eb; }
     .rr-an-brief-preview {
       flex: 1; overflow: auto; margin: 0;
       background: #111827; color: #e5e7eb;
@@ -370,9 +383,14 @@ export default function AnnotatorRoot() {
 
   // popup 入口消息
   useEffect(() => {
-    const listener = (message: { type?: string }) => {
+    const listener = (
+      message: { type?: string },
+      _sender: unknown,
+      sendResponse: (res: unknown) => void
+    ) => {
       if (message?.type === "TOGGLE_ANNOTATE") {
         setOpen((o) => !o)
+        sendResponse({ ok: true })
       }
     }
     try {
@@ -463,7 +481,7 @@ export default function AnnotatorRoot() {
       const rect = el.getBoundingClientRect()
       const context = captureContext(el)
       const x = Math.min(Math.max(rect.x, 8), Math.max(8, window.innerWidth - 320))
-      const y = Math.min(Math.max(rect.y, 8), Math.max(8, window.innerHeight - 200))
+      const y = Math.min(Math.max(rect.y, 8), Math.max(8, window.innerHeight - 280))
       setDraft({ context, el, x, y, sourcePending: true })
       // 异步补 React 源码定位（仅开发模式可得）
       requestReactSource(el).then((info) => {

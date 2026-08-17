@@ -12,6 +12,8 @@ export interface BriefOptions {
   includeRequests: boolean
   /** 相关请求从最近一次录制会话中取 */
   relatedRequests: RecordedRequest[]
+  /** 页面对应的本地代码目录（可选，agent 从这里进入改代码） */
+  workspacePath?: string
 }
 
 export const DEFAULT_BRIEF_OPTIONS: BriefOptions = {
@@ -49,13 +51,17 @@ export function buildBrief(
   lines.push(`# 页面修复任务：${first?.pageTitle || "未命名页面"}`)
   lines.push("")
   lines.push(`- 页面地址：${first?.pageUrl ?? ""}`)
+  if (opts.workspacePath) {
+    lines.push(`- 本地代码目录：\`${opts.workspacePath}\``)
+  }
   lines.push(`- 标注数量：${annotations.length} 处`)
   lines.push(`- 生成时间：${new Date().toLocaleString("zh-CN")}`)
   lines.push("")
   lines.push(
     "> 以下标注来自浏览器页面上的圈选。浏览器中的 DOM 经 SSR/编译后可能与源码不同，" +
       "请综合语义路径、可见文字、CSS 选择器等线索在源码中定位对应组件；" +
-      "「源码定位」仅在 React 开发模式下可得，为空时请以线索反查。"
+      "「源码定位」仅在 React 开发模式下可得，为空时请以线索反查。" +
+      (opts.workspacePath ? "请在上述本地代码目录内检索与修改，不要改动目录外文件。" : "")
   )
   lines.push("")
 

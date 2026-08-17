@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 
+import { getWorkspaceForHost, setWorkspaceForHost, type ElementAnnotation } from "~lib/annotations"
 import { getRequests, getSessions } from "~lib/storage"
-import type { ElementAnnotation, } from "~lib/annotations"
 import { buildBrief, DEFAULT_BRIEF_OPTIONS, type BriefOptions } from "~lib/brief"
 import type { RecordedRequest } from "~lib/types"
 
@@ -30,15 +30,23 @@ export default function BriefModal({ annotations, onClose }: BriefModalProps) {
   const [opts, setOpts] = useState<BriefOptions>(DEFAULT_BRIEF_OPTIONS)
   const [pool, setPool] = useState<RecordedRequest[] | null>(null)
   const [copied, setCopied] = useState(false)
+  const [workspace, setWorkspace] = useState("")
 
   useEffect(() => {
     loadRequestPool().then(setPool)
+    getWorkspaceForHost(location.host).then(setWorkspace)
   }, [])
+
+  // 目录填入即按站点保存，下次同站点自动带出
+  const handleWorkspaceChange = (v: string) => {
+    setWorkspace(v)
+    setWorkspaceForHost(location.host, v).catch(() => {})
+  }
 
   const brief = useMemo(() => {
     if (pool === null) return ""
-    return buildBrief(annotations, { ...opts, relatedRequests: pool })
-  }, [annotations, opts, pool])
+    return buildBrief(annotations, { ...opts, relatedRequests: pool, workspacePath: workspace.trim() || undefined })
+  }, [annotations, opts, pool, workspace])
 
   const filename = useMemo(() => {
     const d = new Date()
@@ -117,6 +125,17 @@ export default function BriefModal({ annotations, onClose }: BriefModalProps) {
             />
             相关请求{pool !== null && pool.length > 0 ? `（最近会话 ${pool.length} 条）` : ""}
           </label>
+        </div>
+
+        <div className="rr-an-brief-workspace">
+          <label className="rr-an-ws-label">本地代码目录</label>
+          <input
+            className="rr-an-ws-input"
+            value={workspace}
+            onChange={(e) => handleWorkspaceChange(e.target.value)}
+            placeholder="如 ~/Codes/my-app（按站点记忆，写进任务书供 agent 定位仓库）"
+            spellCheck={false}
+          />
         </div>
 
         <pre className="rr-an-brief-preview">

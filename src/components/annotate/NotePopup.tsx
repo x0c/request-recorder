@@ -35,7 +35,7 @@ export default function NotePopup({
   }, [])
 
   const left = Math.min(Math.max(8, x), window.innerWidth - 320)
-  const top = Math.min(Math.max(8, y), window.innerHeight - 190)
+  const top = Math.min(Math.max(8, y), Math.max(8, window.innerHeight - 280))
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Escape 在根层统一处理取消，这里阻止冒泡避免误关面板

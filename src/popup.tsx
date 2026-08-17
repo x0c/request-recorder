@@ -63,16 +63,16 @@ export default function IndexPopup() {
     chrome.tabs.create({ url: chrome.runtime.getURL("tabs/history.html") })
   }
 
-  // 在当前页唤出/收起标注面板
+  // 在当前页唤出/收起标注面板（消息送达后再关窗，避免窗口关闭抢先断送消息）
   const toggleAnnotate = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id != null) {
         chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_ANNOTATE" }, () => {
           void chrome.runtime.lastError // 页面无接收方时静默忽略
+          window.close()
         })
       }
     })
-    window.close()
   }
 
   return (

@@ -110,3 +110,24 @@ export async function loadAnnotations(): Promise<ElementAnnotation[]> {
 export async function saveAnnotations(all: ElementAnnotation[]): Promise<void> {
   await chrome.storage.local.set({ [ANNOTATIONS_KEY]: all })
 }
+
+// ─── 站点 -> 本地代码目录映射（告诉 agent 该进哪个仓库改代码）────────────────
+
+export const WORKSPACE_MAP_KEY = "rr:workspace-map"
+
+export async function getWorkspaceForHost(host: string): Promise<string> {
+  const result = await chrome.storage.local.get(WORKSPACE_MAP_KEY)
+  const map = (result[WORKSPACE_MAP_KEY] as Record<string, string>) ?? {}
+  return map[host] ?? ""
+}
+
+export async function setWorkspaceForHost(host: string, dir: string): Promise<void> {
+  const result = await chrome.storage.local.get(WORKSPACE_MAP_KEY)
+  const map = (result[WORKSPACE_MAP_KEY] as Record<string, string>) ?? {}
+  if (dir.trim()) {
+    map[host] = dir.trim()
+  } else {
+    delete map[host]
+  }
+  await chrome.storage.local.set({ [WORKSPACE_MAP_KEY]: map })
+}
