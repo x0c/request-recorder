@@ -10,36 +10,26 @@ export default function RecordControl({ state, onStart, onStop }: Props) {
   const { isRecording, capturedCount } = state
 
   return (
-    <div style={{ padding: "16px 12px 12px" }}>
+    <div className="px-3 pb-3 pt-3.5">
       {/* 状态行 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          marginBottom: 10
-        }}>
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: isRecording ? "#dc2626" : "#9ca3af",
-            animation: isRecording ? "pulse 1.8s ease-in-out infinite" : "none"
-          }}
+      <div className="mb-2.5 flex items-center gap-2">
+        <span
+          className={`h-2 w-2 rounded-full transition-colors ${
+            isRecording
+              ? "animate-pulse bg-red-500"
+              : "bg-zinc-300 dark:bg-zinc-600"
+          }`}
         />
-        <span style={{ fontSize: 13, color: "#374151", fontWeight: 500 }}>
+        <span className="text-[13px] font-medium text-zinc-700 dark:text-zinc-300">
           {isRecording ? "录制中" : "未录制"}
         </span>
         {isRecording && (
-          <span
-            style={{
-              marginLeft: "auto",
-              fontSize: 12,
-              color: "#6b7280"
-            }}>
+          <span className="ml-auto text-xs text-zinc-500 dark:text-zinc-400">
             已捕获{" "}
-            <strong style={{ color: "#111827" }}>{capturedCount}</strong> 条
+            <strong className="font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+              {capturedCount}
+            </strong>{" "}
+            条
           </span>
         )}
       </div>
@@ -47,27 +37,15 @@ export default function RecordControl({ state, onStart, onStop }: Props) {
       {/* 主按钮 */}
       <button
         onClick={isRecording ? onStop : onStart}
-        style={{
-          width: "100%",
-          padding: "9px 0",
-          borderRadius: 8,
-          border: "none",
-          cursor: "pointer",
-          fontSize: 14,
-          fontWeight: 600,
-          color: "#fff",
-          background: isRecording ? "#dc2626" : "#2563eb",
-          transition: "background 0.15s"
-        }}>
+        className={`h-9 w-full rounded-lg text-sm font-semibold text-white shadow-sm transition-all
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98] dark:focus-visible:ring-offset-zinc-900
+          ${
+            isRecording
+              ? "bg-red-600 hover:bg-red-500 focus-visible:ring-red-500/40 dark:bg-red-600 dark:hover:bg-red-500"
+              : "bg-blue-600 hover:bg-blue-500 focus-visible:ring-blue-500/40 dark:bg-blue-600 dark:hover:bg-blue-500"
+          }`}>
         {isRecording ? "■ 停止录制" : "● 开始录制"}
       </button>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
     </div>
   )
 }

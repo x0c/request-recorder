@@ -1,7 +1,7 @@
 {
   "name": "request-recorder",
   "displayName": "Request Recorder",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A Chrome extension for recording background HTTP requests",
   "author": "x0c",
   "scripts": {

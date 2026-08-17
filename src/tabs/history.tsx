@@ -86,49 +86,17 @@ export default function HistoryPage() {
   const selectedSession = sessions.find((s) => s.id === selectedId)
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-        background: "#fff"
-      }}>
+    <div className="flex h-screen bg-white font-sans text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       {/* 左侧会话列表 */}
-      <div
-        style={{
-          width: 220,
-          flexShrink: 0,
-          borderRight: "1px solid #e5e7eb",
-          display: "flex",
-          flexDirection: "column"
-        }}>
-        <div
-          style={{
-            padding: "14px 14px 10px",
-            fontWeight: 700,
-            fontSize: 14,
-            color: "#111827",
-            borderBottom: "1px solid #e5e7eb",
-            display: "flex",
-            alignItems: "center",
-            gap: 8
-          }}>
-          <div
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: "50%",
-              background: "#374151",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff" }} />
-          </div>
-          Request Recorder
+      <div className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50/60 dark:border-zinc-800 dark:bg-zinc-900/50">
+        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3.5 dark:border-zinc-800">
+          <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-zinc-700 shadow-sm dark:bg-zinc-600">
+            <span className="h-[6px] w-[6px] rounded-full bg-white" />
+          </span>
+          <span className="text-sm font-bold tracking-tight">Request Recorder</span>
         </div>
         {loading ? (
-          <div style={{ padding: 16, color: "#9ca3af", fontSize: 13 }}>加载中…</div>
+          <div className="p-4 text-[13px] text-zinc-400 dark:text-zinc-500">加载中…</div>
         ) : (
           <SessionList
             sessions={sessions}
@@ -140,32 +108,25 @@ export default function HistoryPage() {
       </div>
 
       {/* 右侧请求列表 */}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+      <div className="flex min-w-0 flex-1 flex-col">
         {reqLoading ? (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#9ca3af",
-              fontSize: 13
-            }}>
+          <div className="flex flex-1 items-center justify-center text-[13px] text-zinc-400 dark:text-zinc-500">
             加载中…
           </div>
         ) : selectedSession ? (
           <RequestList session={selectedSession} requests={requests} />
         ) : (
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#9ca3af",
-              fontSize: 13
-            }}>
-            请在左侧选择一次录制会话
+          <div className="flex flex-1 flex-col items-center justify-center gap-3">
+            <svg
+              viewBox="0 0 48 48"
+              className="h-14 w-14 text-zinc-200 dark:text-zinc-800"
+              fill="none">
+              <circle cx="24" cy="24" r="19" stroke="currentColor" strokeWidth="2.5" />
+              <circle cx="24" cy="24" r="7" fill="currentColor" />
+            </svg>
+            <p className="text-[13px] text-zinc-400 dark:text-zinc-500">
+              请在左侧选择一次录制会话
+            </p>
           </div>
         )}
       </div>

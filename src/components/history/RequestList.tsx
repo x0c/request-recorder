@@ -85,24 +85,14 @@ export default function RequestList({ session, requests }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div className="flex h-full flex-col">
       {/* 会话信息栏 */}
-      <div
-        style={{
-          padding: "12px 16px",
-          borderBottom: "1px solid #e5e7eb",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          flexShrink: 0
-        }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
-            {session.name}
-          </div>
-          <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+      <div className="flex shrink-0 items-center gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold">{session.name}</div>
+          <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
             {formatTime(session.startTime)}
-            {session.endTime && ` — ${formatTime(session.endTime)}`}
+            {session.endTime && ` - ${formatTime(session.endTime)}`}
             {" · "}
             {requests.length} 条请求
           </div>
@@ -111,34 +101,17 @@ export default function RequestList({ session, requests }: Props) {
           onClick={handleQuickCopy}
           disabled={checkedRequests.length === 0}
           title={`按当前配置（${prefs.format}）直接复制，无需打开弹窗`}
-          style={{
-            padding: "6px 14px",
-            borderRadius: 6,
-            border: `1px solid ${quickCopied ? "#16a34a" : "#d1d5db"}`,
-            background: quickCopied ? "#f0fdf4" : "#fff",
-            color: quickCopied ? "#16a34a" : "#374151",
-            fontSize: 12,
-            fontWeight: 500,
-            cursor: checkedRequests.length === 0 ? "not-allowed" : "pointer",
-            whiteSpace: "nowrap",
-            transition: "all 0.15s"
-          }}>
+          className={`h-8 shrink-0 whitespace-nowrap rounded-lg border px-3.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 disabled:cursor-not-allowed disabled:opacity-40 ${
+            quickCopied
+              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              : "border-zinc-300 bg-white text-zinc-700 hover:border-blue-500/60 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-blue-400/60 dark:hover:text-blue-400"
+          }`}>
           {quickCopied ? "已复制" : `⚡ 复制 ${prefs.format}`}
         </button>
         <button
           onClick={() => setShowModal(true)}
           disabled={checkedRequests.length === 0}
-          style={{
-            padding: "6px 14px",
-            borderRadius: 6,
-            border: "1px solid #d1d5db",
-            background: "#fff",
-            color: "#374151",
-            fontSize: 12,
-            fontWeight: 500,
-            cursor: checkedRequests.length === 0 ? "not-allowed" : "pointer",
-            whiteSpace: "nowrap"
-          }}>
+          className="h-8 shrink-0 whitespace-nowrap rounded-lg border border-zinc-300 bg-white px-3.5 text-xs font-medium text-zinc-700 transition-colors hover:border-blue-500/60 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-300 disabled:hover:text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-blue-400/60 dark:hover:text-blue-400 dark:disabled:hover:border-zinc-700 dark:disabled:hover:text-zinc-300">
           高级复制{checkedRequests.length > 0 && checkedRequests.length < requests.length
             ? `（${checkedRequests.length} 条）`
             : ""}
@@ -147,16 +120,7 @@ export default function RequestList({ session, requests }: Props) {
 
       {/* 全选工具栏 */}
       {requests.length > 0 && (
-        <div
-          style={{
-            padding: "6px 16px",
-            borderBottom: "1px solid #f3f4f6",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            background: "#fafafa",
-            flexShrink: 0
-          }}>
+        <div className="flex shrink-0 items-center gap-2 border-b border-zinc-100 bg-zinc-50 px-4 py-1.5 dark:border-zinc-800/70 dark:bg-zinc-900/60">
           <input
             type="checkbox"
             checked={allChecked}
@@ -164,28 +128,39 @@ export default function RequestList({ session, requests }: Props) {
               if (el) el.indeterminate = !allChecked && someChecked
             }}
             onChange={toggleAll}
-            style={{ cursor: "pointer" }}
+            className="cursor-pointer accent-blue-600"
           />
-          <span style={{ fontSize: 12, color: "#6b7280", cursor: "pointer" }} onClick={toggleAll}>
+          <span
+            className="cursor-pointer select-none text-xs text-zinc-500 dark:text-zinc-400"
+            onClick={toggleAll}>
             {allChecked ? "取消全选" : "全选"}
           </span>
-          <span style={{ fontSize: 12, color: "#9ca3af", marginLeft: 4 }}>
+          <span className="ml-1 text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
             已选 {checkedIds.size} / {requests.length}
           </span>
         </div>
       )}
 
       {/* 请求列表 */}
-      <div style={{ flex: 1, overflowY: "auto" }}>
+      <div className="flex-1 overflow-y-auto">
         {requests.length === 0 ? (
-          <div
-            style={{
-              padding: 32,
-              textAlign: "center",
-              color: "#9ca3af",
-              fontSize: 13
-            }}>
-            本次录制未捕获任何请求
+          <div className="flex flex-col items-center px-8 py-16 text-center">
+            <svg
+              viewBox="0 0 48 48"
+              className="mb-3 h-12 w-12 text-zinc-200 dark:text-zinc-800"
+              fill="none">
+              <circle cx="24" cy="24" r="19" stroke="currentColor" strokeWidth="2.5" />
+              <path
+                d="M15 24l6 6 12-12"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <p className="text-[13px] text-zinc-400 dark:text-zinc-500">
+              本次录制未捕获任何请求
+            </p>
           </div>
         ) : (
           requests.map((req) => (

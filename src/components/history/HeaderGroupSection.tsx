@@ -37,7 +37,7 @@ export default function HeaderGroupSection({
   return (
     <div>
       {/* 全选/全不选 */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+      <div className="mb-2.5 flex gap-1.5">
         <SmallBtn active={allChecked} onClick={() => onSelectAll(true)}>
           全选
         </SmallBtn>
@@ -54,36 +54,27 @@ export default function HeaderGroupSection({
         return (
           <div
             key={group}
-            style={{
-              marginBottom: 4,
-              border: "1px solid #e5e7eb",
-              borderRadius: 6,
-              overflow: "hidden"
-            }}>
+            className="mb-1.5 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "7px 10px",
-                background: checked ? "#f9fafb" : "#fff",
-                gap: 8
-              }}>
+              className={`flex items-center gap-2 px-2.5 py-1.5 transition-colors ${
+                checked ? "bg-zinc-50 dark:bg-zinc-800/50" : "bg-transparent"
+              }`}>
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() => onToggle(group)}
-                style={{ cursor: "pointer" }}
+                className="cursor-pointer accent-blue-600"
               />
-              <span style={{ flex: 1, fontSize: 12, color: "#374151", fontWeight: 500 }}>
+              <span className="flex-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
                 {HEADER_GROUP_LABELS[group]}
                 {headers.length > 0 && (
-                  <span style={{ color: "#9ca3af", fontWeight: 400 }}>
+                  <span className="font-normal text-zinc-400 dark:text-zinc-500">
                     {" "}({headers.map((h) => h.name).slice(0, 3).join(", ")}
                     {headers.length > 3 ? " …" : ""})
                   </span>
                 )}
                 {headers.length === 0 && (
-                  <span style={{ color: "#d1d5db", fontWeight: 400 }}>
+                  <span className="font-normal text-zinc-300 dark:text-zinc-600">
                     {" "}({emptyHint})
                   </span>
                 )}
@@ -96,38 +87,33 @@ export default function HeaderGroupSection({
                       [group]: !prev[group]
                     }))
                   }
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 11,
-                    color: "#6b7280",
-                    padding: 0
-                  }}>
-                  {isExpanded ? "收起 ▲" : "展开 ▾"}
+                  className="flex items-center gap-0.5 rounded px-1 py-0.5 text-[11px] text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300">
+                  {isExpanded ? "收起" : "展开"}
+                  <svg
+                    viewBox="0 0 16 16"
+                    className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                    fill="none">
+                    <path
+                      d="M4 6l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               )}
             </div>
 
             {isExpanded && headers.length > 0 && (
-              <div
-                style={{
-                  padding: "4px 10px 8px 32px",
-                  background: "#f9fafb",
-                  borderTop: "1px solid #e5e7eb"
-                }}>
+              <div className="border-t border-zinc-200 bg-zinc-50 px-2.5 pb-2 pt-1.5 pl-[30px] dark:border-zinc-800 dark:bg-zinc-800/30">
                 {headers.map((h, i) => (
                   <div
                     key={i}
-                    style={{
-                      fontSize: 11,
-                      fontFamily: "monospace",
-                      color: "#6b7280",
-                      marginTop: 2
-                    }}>
+                    className="mt-0.5 break-all font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
                     {h.name}
                     {h.value && (
-                      <span style={{ color: "#9ca3af" }}>
+                      <span className="text-zinc-400 dark:text-zinc-500">
                         : {h.value.length > 60 ? h.value.slice(0, 60) + "…" : h.value}
                       </span>
                     )}
@@ -154,15 +140,11 @@ function SmallBtn({
   return (
     <button
       onClick={onClick}
-      style={{
-        padding: "3px 10px",
-        borderRadius: 4,
-        border: `1px solid ${active ? "#2563eb" : "#d1d5db"}`,
-        background: active ? "#eff6ff" : "#fff",
-        color: active ? "#2563eb" : "#6b7280",
-        fontSize: 11,
-        cursor: "pointer"
-      }}>
+      className={`rounded-md border px-2.5 py-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${
+        active
+          ? "border-blue-600 bg-blue-600/10 font-semibold text-blue-700 dark:border-blue-400 dark:bg-blue-400/10 dark:text-blue-300"
+          : "border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-300"
+      }`}>
       {children}
     </button>
   )

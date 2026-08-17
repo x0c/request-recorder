@@ -30,7 +30,7 @@ export const getStyle: PlasmoGetStyle = () => {
       font-size: 11px;
       font-weight: 700;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.14);
       transition: transform 0.15s, box-shadow 0.15s;
       outline: none;
       flex-direction: column;
@@ -38,11 +38,14 @@ export const getStyle: PlasmoGetStyle = () => {
       color: #fff;
     }
     .rr-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      transform: translateY(-1px) scale(1.06);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+    .rr-btn:active {
+      transform: scale(0.96);
     }
     .rr-btn.idle {
-      background: #374151;
+      background: #27272a;
     }
     .rr-btn.recording {
       background: #dc2626;
@@ -62,11 +65,12 @@ export const getStyle: PlasmoGetStyle = () => {
       position: absolute;
       bottom: 58px;
       right: 0;
-      background: #1f2937;
+      background: rgba(24,24,27,0.92);
       color: #fff;
       font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       white-space: nowrap;
       pointer-events: none;
       opacity: 0;
@@ -95,15 +99,20 @@ export const getStyle: PlasmoGetStyle = () => {
       font-weight: 700;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       color: #fff;
-      background: #374151;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: rgba(24,24,27,0.9);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.12);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
       transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
       outline: none;
       white-space: nowrap;
     }
     .rr-view-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      transform: translateY(-1px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.16);
+    }
+    .rr-view-btn:active {
+      transform: scale(0.97);
     }
     .rr-view-btn.fade-out {
       opacity: 0;

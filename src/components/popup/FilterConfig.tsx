@@ -24,42 +24,29 @@ export default function FilterConfig({ filter, onChange }: Props) {
   }
 
   return (
-    <div style={{ padding: "0 12px 12px" }}>
-      <div
-        style={{
-          fontSize: 12,
-          color: "#6b7280",
-          marginBottom: 8,
-          fontWeight: 600,
-          textTransform: "uppercase",
-          letterSpacing: "0.05em"
-        }}>
+    <div className="px-3 pb-3 pt-3">
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
         过滤配置
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+      <div className="mb-2.5 flex flex-wrap gap-1.5">
         {ALL_TYPES.map(({ value, label }) => {
           const active = filter.types.includes(value)
           return (
             <button
               key={value}
               onClick={() => toggleType(value)}
-              style={{
-                padding: "3px 10px",
-                borderRadius: 9999,
-                fontSize: 12,
-                border: `1px solid ${active ? "#3b82f6" : "#d1d5db"}`,
-                background: active ? "#eff6ff" : "#f9fafb",
-                color: active ? "#2563eb" : "#6b7280",
-                cursor: "pointer",
-                fontWeight: active ? 600 : 400
-              }}>
+              className={`rounded-full border px-2.5 py-[3px] text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${
+                active
+                  ? "border-blue-600 bg-blue-600/10 font-semibold text-blue-700 dark:border-blue-400 dark:bg-blue-400/10 dark:text-blue-300"
+                  : "border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-300"
+              }`}>
               {label}
             </button>
           )
         })}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <span style={{ fontSize: 12, color: "#6b7280", whiteSpace: "nowrap" }}>
+      <div className="flex items-center gap-1.5">
+        <span className="whitespace-nowrap text-xs text-zinc-500 dark:text-zinc-400">
           URL 关键词
         </span>
         <input
@@ -67,28 +54,13 @@ export default function FilterConfig({ filter, onChange }: Props) {
           value={filter.urlKeyword}
           onChange={(e) => onChange({ ...filter, urlKeyword: e.target.value })}
           placeholder="如 /api/"
-          style={{
-            flex: 1,
-            fontSize: 12,
-            padding: "4px 8px",
-            border: "1px solid #d1d5db",
-            borderRadius: 6,
-            outline: "none",
-            fontFamily: "monospace"
-          }}
+          className="h-7 min-w-0 flex-1 rounded-md border border-zinc-300 bg-zinc-50 px-2 font-mono text-xs text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
         />
         {(filter.types.length !== DEFAULT_FILTER.types.length ||
           filter.urlKeyword) && (
           <button
             onClick={() => onChange({ ...DEFAULT_FILTER })}
-            style={{
-              fontSize: 11,
-              color: "#9ca3af",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "0 2px"
-            }}>
+            className="rounded px-1 py-0.5 text-[11px] text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-300">
             重置
           </button>
         )}

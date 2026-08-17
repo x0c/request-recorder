@@ -48,6 +48,24 @@ export interface PageConfigEvent {
   recordFetch: boolean
 }
 
+// ─── 标注域：Annotator (isolated) -> page-patcher (MAIN) 源码定位 RPC ─────────
+
+/** 请求定位元素的源码位置，path 为 documentElement 起的 childIndex 链 */
+export interface LocateSourceRequest {
+  source: "rr-annotate"
+  event: "locateSource"
+  requestId: string
+  path: number[]
+}
+
+/** page-patcher 返回的源码定位结果（React dev 模式才有值） */
+export interface SourceLocatedEvent {
+  source: "rr-page"
+  event: "sourceLocated"
+  requestId: string
+  info: { fileName: string; lineNumber: number; componentName: string | null } | null
+}
+
 // ─── Content Script / Popup → Background（chrome.runtime.sendMessage）───────
 
 export type ExtensionMessage =
@@ -77,6 +95,7 @@ export type ExtensionMessage =
       duration: number
       kind: "xhr" | "fetch"
     }
+  | { type: "TOGGLE_ANNOTATE" }
 
 // ─── Background → Popup / Content Script（广播）─────────────────────────────
 

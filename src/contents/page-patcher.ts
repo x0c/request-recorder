@@ -36,6 +36,73 @@ window.addEventListener("message", (event) => {
 // 握手：通知 injector 我已就绪，请求推送当前配置
 window.postMessage({ source: SOURCE, event: "ready" }, "*")
 
+// ─── 标注域源码定位 RPC（Annotator 在 isolated world，读不到页面 JS 挂在 DOM 上的 fiber 属性）──
+
+interface SourceInfo {
+  fileName: string
+  lineNumber: number
+  componentName: string | null
+}
+
+/** 从元素上取 React Fiber（开发模式下由 React 挂载） */
+function getReactFiber(el: Element): any | undefined {
+  try {
+    const key = Object.keys(el as any).find(
+      (k) => k.startsWith("__reactFiber$") || k.startsWith("__reactInternalInstance$")
+    )
+    return key ? (el as any)[key] : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/** 沿 fiber 向上找第一个带源码信息的节点，优先有组件名的 */
+function findDebugSource(fiber: any): SourceInfo | null {
+  let current = fiber
+  let depth = 0
+  let firstWithSource: SourceInfo | null = null
+  while (current && depth < 30) {
+    const src = current._debugSource
+    if (src && src.fileName) {
+      const name =
+        (typeof current.type === "function" || typeof current.type === "object")
+          ? current.type?.displayName || current.type?.name || null
+          : null
+      const info: SourceInfo = {
+        fileName: String(src.fileName),
+        lineNumber: Number(src.lineNumber) || 0,
+        componentName: name
+      }
+      if (info.componentName) return info
+      if (!firstWithSource) firstWithSource = info
+    }
+    current = current._debugOwner ?? current.return
+    depth++
+  }
+  return firstWithSource
+}
+
+window.addEventListener("message", (event) => {
+  if (event.source !== window || !event.data || event.data.source !== "rr-annotate") return
+  if (event.data.event !== "locateSource") return
+  const { requestId, path } = event.data as { requestId: string; path: number[] }
+  let info: SourceInfo | null = null
+  try {
+    // 按 childIndex 链从 documentElement 定位到目标元素（两个 world 共享同一棵 DOM）
+    let el: Element = document.documentElement
+    for (const idx of Array.isArray(path) ? path : []) {
+      const next = el.children[idx]
+      if (!next) throw new Error("路径失配")
+      el = next
+    }
+    const fiber = getReactFiber(el)
+    if (fiber) info = findDebugSource(fiber)
+  } catch {
+    info = null
+  }
+  window.postMessage({ source: SOURCE, event: "sourceLocated", requestId, info }, "*")
+})
+
 function uid(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID()
