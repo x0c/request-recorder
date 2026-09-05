@@ -19,12 +19,11 @@ npm run build
 
 ## 文档导航
 
-> 以下文档在涉及对应领域的开发、评审或排查时先读取。
-
-- `~/.config/agentsync/docs/CHROME_EXTENSION_DEVELOPMENT_KNOWLEDGE_BASE.md`：Chrome 扩展本地开发 / 热更新装载 / MV3 约束 / 自动化测试 / 商店审核前必读；**禁止用脚本或调试协议碰日常 Chrome 配置**
-- `docs/REQUEST_RECORDING_KNOWLEDGE_BASE.md`：录制状态、事件配对、body 捕获、SW 生命周期、过滤机制、会话管理
-- `docs/REQUEST_EXPORT_KNOWLEDGE_BASE.md`：导出格式转换、Header 分组过滤、复制偏好、高级复制弹窗
-- `docs/PAGE_ANNOTATION_KNOWLEDGE_BASE.md`：页面标注模式、圈选拦截、元素线索包、双 world 源码定位、任务书生成、站点代码目录映射；改标注/任务书任何逻辑前必读
+- `~/.config/agentsync/docs/CHROME_EXTENSION_DEVELOPMENT_KNOWLEDGE_BASE.md`：Chrome 扩展本地开发 / 热更新 / MV3 / 自动化测试 / 商店审核前**必读**。不读会用脚本或调试协议碰日常 Chrome 配置。
+- `docs/REQUEST_RECORDING_KNOWLEDGE_BASE.md`：改、评审或排查录制状态、事件配对、body 捕获、SW 生命周期、过滤或会话管理前**必读**。
+- `docs/REQUEST_EXPORT_KNOWLEDGE_BASE.md`：改导出格式、Header 分组过滤、复制偏好或高级复制弹窗前**必读**。
+- `docs/PAGE_ANNOTATION_KNOWLEDGE_BASE.md`：改标注模式、圈选、线索包、双 world 定位、任务书或站点代码目录映射前**必读**。不读会破坏标注/任务书契约。
+- `docs/OPENDESIGN_RESEARCH.md`：规划新手引导、导出预设、会话标记等体验优化前先读；含已验证可借鉴模式。
 
 ## 领域地图（doc-init）
 
