@@ -107,7 +107,8 @@ webRequest API 和 page-patcher 各自独立上报事件，配对规则：
    - 需要 page body 且 page 未完成 → 启动宽限定时器（`PAGE_GRACE_MS=1500ms`）
    - 宽限超时 → 放弃等待 page body，直接落盘
    - 双侧完成 → 立即落盘
-4. **兜底清扫**：chrome.alarms 每 30s 检查，超时 `ENTRY_TTL_MS=60s` 的 entry 强制收尾
+4. **落盘与失败重入队**（`flushEntry()`）：先从 `allEntries`/`byWrId`/`byPageId`/`matchQueues` 出队防并发；`saveRequest` 成功后再 `recordSavedId`；**写盘失败必须重入队并短延迟重试**（清扫 alarm 亦可兜底），禁止静默丢弃导致录制永久缺条。过滤器最终判定不通过仍直接丢弃（不重入队）。
+5. **兜底清扫**：chrome.alarms 每 30s 检查，超时 `ENTRY_TTL_MS=60s` 的 entry 强制收尾
 
 ### 过滤两阶段
 
@@ -218,6 +219,8 @@ webRequest API 和 page-patcher 各自独立上报事件，配对规则：
 ## §6 核心业务规则与隐性约束
 
 - **【禁止】直接修改 `allEntries`/`byWrId`/`byPageId`/`matchQueues` 的索引结构** → 必须通过 `createEntry()`/`enqueue()`/`dequeue()` 维护（原因：四个索引必须保持一致性，遗漏任何一个会导致配对失败或内存泄漏）
+
+- **【禁止】`flushEntry` 在 `saveRequest` 失败后静默丢弃条目** → 必须重入队（恢复四索引）并安排重试；并发防护用「已不在 `allEntries` 则直接 return」（原因：先出队再写盘，失败不重入队会导致录制永久缺条；重入时若不防并发会双写/双计 `capturedCount`）
 
 - **【AI 易错点】【隐性依赖】修改 webRequest 监听器的过滤条件时，必须同时检查 page-patcher 的过滤逻辑** → 否则一侧放行、另一侧不放行，导致 PendingEntry 永久悬挂最终被清扫丢弃（原因：webRequest 侧用宽松规则准入，page 侧用精确规则过滤，两阶段设计不允许只改一侧）
 

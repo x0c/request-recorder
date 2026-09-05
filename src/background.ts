@@ -214,6 +214,10 @@ async function flushEntry(entry: PendingEntry): Promise<void> {
     clearTimeout(entry.graceTimer)
     entry.graceTimer = null
   }
+  // 已出队正在写盘、或已成功落盘：避免并发重入导致双写/双计
+  if (!allEntries.has(entry)) return
+
+  // 先出队防并发；写盘失败再重入队，避免永久缺条
   allEntries.delete(entry)
   if (entry.wrRequestId) byWrId.delete(entry.wrRequestId)
   if (entry.pageRequestId) byPageId.delete(entry.pageRequestId)
@@ -242,7 +246,15 @@ async function flushEntry(entry: PendingEntry): Promise<void> {
   try {
     await saveRequest(req)
   } catch (e) {
-    console.error("[rr] 请求写入 storage 失败，已丢弃该条", e)
+    console.error("[rr] 请求写入 storage 失败，已重入队待重试", e)
+    allEntries.add(entry)
+    if (entry.wrRequestId) byWrId.set(entry.wrRequestId, entry)
+    if (entry.pageRequestId) byPageId.set(entry.pageRequestId, entry)
+    enqueue(entry)
+    // SW 仍存活时尽快重试；挂起后由清扫 alarm 兜底
+    setTimeout(() => {
+      void flushEntry(entry)
+    }, SESSION_SYNC_DEBOUNCE_MS)
     return
   }
 
