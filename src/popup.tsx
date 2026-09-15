@@ -63,18 +63,6 @@ export default function IndexPopup() {
     chrome.tabs.create({ url: chrome.runtime.getURL("tabs/history.html") })
   }
 
-  // 在当前页唤出/收起标注面板（消息送达后再关窗，避免窗口关闭抢先断送消息）
-  const toggleAnnotate = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id != null) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_ANNOTATE" }, () => {
-          void chrome.runtime.lastError // 页面无接收方时静默忽略
-          window.close()
-        })
-      }
-    })
-  }
-
   return (
     <div className="w-80 bg-white font-sans text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
       {/* 标题栏 */}
@@ -108,17 +96,12 @@ export default function IndexPopup() {
       {/* 分隔线 */}
       <div className="mx-3 h-px bg-zinc-100 dark:bg-zinc-800" />
 
-      {/* 查看历史 + 页面标注 */}
+      {/* 查看历史 */}
       <div className="flex gap-2 px-3 pb-3.5 pt-3">
         <button
           onClick={openHistory}
           className="h-9 flex-1 rounded-lg border border-zinc-200 bg-zinc-50 text-[13px] font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800">
           历史记录{sessionCount > 0 ? `（${sessionCount}）` : ""}
-        </button>
-        <button
-          onClick={toggleAnnotate}
-          className="h-9 flex-1 rounded-lg border border-zinc-200 bg-zinc-50 text-[13px] font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800">
-          ✎ 页面标注
         </button>
       </div>
     </div>
