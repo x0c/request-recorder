@@ -22,7 +22,7 @@ npm run build
 - `~/.config/agentsync/docs/CHROME_EXTENSION_DEVELOPMENT_KNOWLEDGE_BASE.md`：Chrome 扩展本地开发 / 热更新 / MV3 / 自动化测试 / 商店审核前**必读**。不读会用脚本或调试协议碰日常 Chrome 配置。
 - `docs/REQUEST_RECORDING_KNOWLEDGE_BASE.md`：改、评审或排查录制状态、事件配对、body 捕获、SW 生命周期、过滤或会话管理前**必读**。
 - `docs/REQUEST_EXPORT_KNOWLEDGE_BASE.md`：改导出格式、Header 分组过滤、复制偏好或高级复制弹窗前**必读**。
-- 页面标注已迁到 EditHere Chrome 扩展（`/Users/geraltgraham/Codes/EditHere/chrome/`）。本仓只做请求录制与导出。
+- 页面标注已迁到 EditHere Chrome 扩展（`~/Codes/EditHere/chrome/`）。本仓只做请求录制与导出。
 - `docs/OPENDESIGN_RESEARCH.md`：规划新手引导、导出预设、会话标记等体验优化前先读；含已验证可借鉴模式。
 
 ## 领域地图（doc-init）
