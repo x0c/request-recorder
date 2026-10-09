@@ -1,5 +1,13 @@
 # 请求录制 领域知识库
 
+> General MV3 constraints: see [“Wake-up initialization and durable
+> state”](~/.config/agentsync/docs/CHROME_EXTENSION_DEVELOPMENT_KNOWLEDGE_BASE.md#wake-up-initialization-and-durable-state) and
+> [“Injection readiness and message
+> direction”](~/.config/agentsync/docs/CHROME_EXTENSION_DEVELOPMENT_KNOWLEDGE_BASE.md#injection-readiness-and-message-direction).
+> This doc keeps only this extension's message protocol, state implementation, measured
+> limits and verification evidence; message/state key names and readyPromise
+> implementation details follow this doc.
+
 ## §0 目录索引
 
 | § | 标题 | 定位 |
@@ -115,15 +123,15 @@ webRequest API 和 page-patcher 各自独立上报事件，配对规则：
 1. **准入**（webRequest 侧）：`typeAllowedEarly()` — xmlhttprequest 无法区分 xhr/fetch，任一勾选即放行
 2. **最终判定**（flush 时）：`finalAllowed()` — 用 page 侧修正后的精确类型再过滤，不匹配则整条丢弃
 
-### Service Worker 生命周期
+### Service Worker 生命周期 (this extension's implementation; general constraints: header links above)
 
 - **持久化**：录制状态写入 `chrome.storage.session`（key=`rr:state`），SW 唤醒时恢复
 - **恢复**：SW 重启时 `init()` 从 session storage 恢复 recordingState；若 session 仍存在且 `endTime==null`，续接录制，`capturedCount` 从已落盘请求数重建
 - **浏览器重启**：`chrome.storage.session` 被清空，此时补写所有未关闭会话的 endTime
-- **挂起前**：`onSuspend` 触发 `syncSessionRequestIds()`，尽力把缓冲区 requestIds 同步到 storage（但 Chrome 不保证 onSuspend 一定触发）
+- **挂起前**：`onSuspend` 触发 `syncSessionRequestIds()`，尽力把缓冲区 requestIds 同步到 storage (onSuspend is not a reliable persistence protocol and Chrome does not guarantee it fires: header links; the local mitigation is implementation evidence, not a complete fix)
 - **竞态已修复**：`init()` 用 `readyPromise` 包装（`background.ts` 的 `boot()`），listener 处理消息前 `await readyPromise`，消除"listener 先于 init 完成处理消息、合法请求被未录制误判丢弃"的竞态
-- **SW 挂起恢复后的数据丢失分层**：
-  - **内在限制（不可修复）**：挂起期间完成的所有请求事件被 Chrome 丢弃，无法回溯；正在配对中的 pending entry 随内存清空（`allEntries/byWrId/byPageId/matchQueues` 全部重新初始化为空）而消失。这是 MV3 SW 生命周期设计的固有后果。
+- **SW 挂起恢复后的数据丢失分层（evidence split: browser-restart recovery verified by the 2026-07-17 E2E; same-session suspend/wake recovery is code-review only, see §2 verification and §9; unvalidated across Chrome versions）**：
+  - **Code-review inference: in-memory pending indexes are recreated with the worker**: `allEntries/byWrId/byPageId/matchQueues` are initialized empty, so a terminated/recreated worker cannot recover its pending entries from these indexes alone. This is an implementation inference, not a measured same-session suspend/wake result. The extent of request-event loss and callback delivery during same-session suspension remains unverified and depends on event wake-up; it is not an observed platform inevitability.
   - **可修复缺陷①已部分缓解**：`sessionIdBuffer` 未持久化 → 已通过 `flushEntry()` 落盘的请求（`rr:req:<id>`）其 ID 如果尚未攒批同步到 `session.requestIds`，SW 重启后会脱链。缓解：`onSuspend` + `STOP_RECORDING` 时主动 `syncSessionRequestIds()`；兜底清扫 alarm 触发 SW 唤醒时也会顺带执行。但 Chrome 不保证 `onSuspend` 一定触发，挂起前最后一拍未同步的请求仍会脱链——属残留风险。
   - **现有缓解**：sweep alarm 对重启后新建的 entry 有效（60s TTL 兜底）；`onCompleted` 兜底可补建 entry 但丢失 requestHeaders/page body/triggerInfo
 
@@ -228,15 +236,15 @@ webRequest API 和 page-patcher 各自独立上报事件，配对规则：
 
 - **【AI 易错点】【隐性依赖】修改录制状态时必须调用 `persistState()`** → 否则 SW 挂起后重启无法恢复录制状态（原因：录制状态仅存在于内存，必须显式写入 `chrome.storage.session`）
 
-- **【AI 易错点】【隐式语义】`chrome.alarms` 做兜底清扫** → SW 挂起后 `setTimeout` 会丢失，只有 `chrome.alarms` 能唤醒 SW。添加新的定时逻辑时，若需要 SW 挂起后仍生效，必须使用 `chrome.alarms` 而非 `setTimeout`（原因：SW 生命周期限制）
+- **【AI 易错点】【隐式语义】`chrome.alarms` 做兜底清扫** → 本扩展兜底清扫用 `chrome.alarms`（每 30s 检查，entry 超时 `ENTRY_TTL_MS=60s` 强制收尾），不用 `setTimeout` (timer choice: header links; alarms provide a wake-up opportunity only — no precise-execution guarantee, and not mandatory for every workload)
 
-- **【AI 易错点】【隐性依赖】listener 处理消息前必须 `await readyPromise`** → SW 刚唤醒时 listener 可能先于 `init()` 完成，此时 `recordingState`/`filterConfig` 尚未从 storage 恢复，直接处理 `REQUEST_BODY_CAPTURED` 等消息会把合法请求当"未录制"丢弃。`boot()` 把 `init()` 包成 `readyPromise`，listener 拿到消息后先 `await readyPromise` 再 `handleMessage`（原因：init 与 listener 注册的时序竞态）
+- **【AI 易错点】【隐性依赖】listener 处理消息前必须 `await readyPromise`** → 本扩展 `boot()` 把 `init()` 包成 `readyPromise`，listener 先 `await readyPromise` 再 `handleMessage` (basis: §2; general wake-up race: header links; message names: §5 in this doc)
 
 - **【AI 易错点】【隐性依赖】修改 webRequest 监听器的过滤条件时，必须同时检查 page-patcher 的过滤逻辑** → 否则一侧放行、另一侧不放行，导致 PendingEntry 永久悬挂最终被清扫丢弃（原因：webRequest 侧用宽松规则准入，page 侧用精确规则过滤，两阶段设计不允许只改一侧）
 
-- **【AI 易错点】【测试方法】SW 内部不能给自己发消息** → `chrome.runtime.sendMessage` 在 SW 上下文中发给自己的消息会报 "Could not establish connection. Receiving end does not exist"（SW 不是消息的接收端，只有 popup/content script 是）。自动化验证录制/过滤行为时，必须用 popup 页面（`chrome-extension://<id>/popup.html`）作为消息发起方，或通过真实 UI 点击浮动按钮触发
+- **【AI 易错点】【测试方法】SW 内 `runtime.sendMessage` 发给自己的消息收不到** → 实测报 "Could not establish connection. Receiving end does not exist"（2026-07-17 现场观测；direction semantics: header links）。自动化验证录制/过滤行为时，必须用 popup 页面（`chrome-extension://<id>/popup.html`）作为消息发起方，或通过真实 UI 点击浮动按钮触发；一次自发自收失败不证明接收端或产品流程损坏。
 
-- **【AI 易错点】【测试方法】page-patcher 是动态注册的 MAIN world 脚本** → 通过 `chrome.scripting.registerContentScripts({world:"MAIN"})` 在 SW 启动时异步注册，扩展刚加载后第一批打开的页面可能赶不上注册，fetch/XHR 未被 patch（表现为"请求只走 webRequest 侧、无 body/triggerInfo、类型无法区分"）。自动化测试时需 `waitForFunction(()=>!window.fetch.toString().includes("[native code]"))` 确认 patch 已生效再发起请求
+- **【AI 易错点】【测试方法】page-patcher 是动态注册的 MAIN world 脚本** → 通过 `chrome.scripting.registerContentScripts({world:"MAIN"})` 在 SW 启动时异步注册（readiness-gap explanation: header links）。本扩展表现为：扩展刚加载后第一批打开的页面可能赶不上注册，fetch/XHR 未被 patch（"请求只走 webRequest 侧、无 body/triggerInfo、类型无法区分"）。自动化测试时需 `waitForFunction(()=>!window.fetch.toString().includes("[native code]"))` 确认 patch 已生效再发起请求
 
 - **【隐性依赖】`sessionSyncTimer`（防抖）和 `syncSessionRequestIds()`** → 停止录制时必须同步调用 `syncSessionRequestIds()`（原因：否则缓冲区中的 requestIds 不会被写入 sessions，历史页看不到最后一批请求）
 
@@ -246,7 +254,7 @@ webRequest API 和 page-patcher 各自独立上报事件，配对规则：
 
 - **【消歧】`type` 字段的两种含义**：PendingEntry.type 在 webRequest 侧是粗粒度（xhr/script/stylesheet/image/other），page-patcher 到达后修正为精确类型（xhr/fetch）。`mapResourceType()` 将 `xmlhttprequest` 映射为 `xhr`，但此时无法区分是 xhr 还是 fetch——只有 page 侧的 `kind` 字段能区分
 
-- **【已确认缺陷+内在限制】SW 挂起后内存中的 pending entry 索引全部丢失**，挂起期间完成的请求事件被 Chrome 丢弃不可回溯（MV3 内在限制）；`sessionIdBuffer` 未持久化导致已落盘请求与会话脱链（可修复缺陷）；`void init()` 与 listener 注册存在竞态可能导致 SW 刚唤醒时合法请求被静默丢弃（可修复缺陷）。详见 §2 Service Worker 生命周期
+- **Code-review findings and residual risks — see §2 Service Worker 生命周期**: recreated in-memory pending indexes do not recover pending entries by themselves. The 2026-07-17 E2E verified browser-restart recovery; same-session suspend/wake recovery was reviewed in code only. An unpersisted `sessionIdBuffer` can leave persisted requests disconnected from their session. The `void init()`/listener initialization race was mitigated with `readyPromise` (see §2). General constraints: header links above.
 
 ## §7 常见易忽略条件与验证路径
 

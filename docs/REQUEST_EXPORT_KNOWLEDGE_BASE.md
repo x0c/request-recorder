@@ -1,5 +1,11 @@
 # 请求导出 领域知识库
 
+> General rule: see [“Shareable diagnostic
+> exports”](~/.config/agentsync/docs/CHROME_EXTENSION_DEVELOPMENT_KNOWLEDGE_BASE.md#shareable-diagnostic-exports).
+> This doc keeps only this extension's group definitions, preference keys, format behavior
+> and known implementation defects; it does not claim header grouping sanitizes
+> credentials in URLs/bodies, nor that every exporter honors the default.
+
 ## §0 目录索引
 
 | § | 标题 | 定位 |
@@ -42,7 +48,7 @@
   → filterHeaders() 在格式转换前过滤
 ```
 
-认证类 Header（Authorization、Cookie、Set-Cookie、X-Auth-Token 等）默认不勾选，防止意外泄漏。
+认证类 Header（Authorization、Cookie、Set-Cookie、X-Auth-Token 等）默认不勾选（`HEADER_GROUP_DEFAULTS.auth=false`，见 §6；general default rule: header link above）。注意：分组过滤只作用于 header 名集合，不清洗 URL 参数或 body 中的凭据。
 
 ### 复制偏好持久化
 
@@ -108,7 +114,7 @@
 
 ## §6 核心业务规则与隐性约束
 
-- **【禁止】将认证类 Header 的默认勾选改为 true** → 必须 保持 `HEADER_GROUP_DEFAULTS.auth = false`（原因：默认导出 Cookie/Authorization/Token 会导致敏感信息泄漏）
+- **【禁止】将认证类 Header 的默认勾选改为 true** → 必须保持 `HEADER_GROUP_DEFAULTS.auth = false` (general rationale: header link above; this extension's group definitions and preference keys: §4).
 
 - **【AI 易错点】【消歧】响应体包含策略分两种**：NATIVE_RESPONSE_FORMATS（har/postman/mitmproxy/json）原生支持响应结构，UI 文案为"包含响应体"；其他格式以注释形式追加，UI 文案为"包含响应体（以注释形式追加）"。**添加新格式时必须决定属于哪种策略并在 `NATIVE_RESPONSE_FORMATS` 中注册**
 
